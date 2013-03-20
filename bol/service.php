@@ -1,0 +1,123 @@
+<?php
+
+/**
+ * Copyright (c) 2012, Oxwall CandyStore
+ * All rights reserved.
+
+ * This software is intended for use with Oxwall Free Community Software http://www.oxwall.org/ and is
+ * licensed under The BSD license.
+ */
+
+/**
+ * Guests service class
+ *
+ * @author Oxwall CandyStore <plugins@oxcandystore.com>
+ * @package ow.ow_plugins.ocs_guests.bol
+ * @since 1.3.1
+ */
+
+final class OCSGUESTS_BOL_Service
+{
+    /**
+     * @var OCSGUESTS_BOL_GuestDao
+     */
+    private $guestDao;
+    /**
+     * Class instance
+     *
+     * @var OCSGUESTS_BOL_Service
+     */
+    private static $classInstance;
+    
+    /**
+     * Class constructor
+     *
+     */
+    private function __construct()
+    {
+        $this->guestDao = OCSGUESTS_BOL_GuestDao::getInstance();
+    }
+
+    /**
+     * Returns class instance
+     *
+     * @return OCSGUESTS_BOL_Service
+     */
+    public static function getInstance()
+    {
+        if ( null === self::$classInstance )
+        {
+            self::$classInstance = new self();
+        }
+
+        return self::$classInstance;
+    }
+    
+    public function trackVisit( $userId, $guestId )
+    {
+    	$guest = $this->guestDao->findGuest($userId, $guestId);
+    	
+    	if ( $guest )
+    	{
+    		$guest->visitTimestamp = time();
+    		$this->guestDao->save($guest);
+    		
+    		return true;
+    	}
+    	
+    	$guest = new OCSGUESTS_BOL_Guest();
+    	$guest->userId = $userId;
+    	$guest->guestId = $guestId;
+    	$guest->viewed = 0;
+    	$guest->visitTimestamp = time();
+    	
+    	$this->guestDao->save($guest);
+    	
+    	return true;
+    }
+        
+    public function findGuestsForUser( $userId, $page, $limit )
+    {
+    	if ( !$userId ) return;
+    	
+    	$guests = $this->guestDao->findUserGuests($userId, $page, $limit);
+    	
+    	foreach ( $guests as &$g )
+    	{
+    		$g->visitTimestamp = UTIL_DateTime::formatDate($g->visitTimestamp, false);
+    	}
+    	
+    	return $guests;
+    }
+    
+    public function findGuestUsers( $userId, $page, $limit )
+    {
+        if ( !$userId ) return;
+        
+        $guests = $this->guestDao->findGuestUsers($userId, $page, $limit);
+        
+        return $guests;
+    }
+    
+    public function countGuestsForUser( $userId )
+    {
+    	return $this->guestDao->countUserGuests($userId);    	
+    }
+    
+    public function checkExpiredGuests()
+    {
+    	$months = (int) OW::getConfig()->getValue('ocsguests', 'store_period');
+    	$timestamp = $months * 30 * 24 * 60 * 60;
+    	
+        $this->guestDao->deleteExpired($timestamp);
+        
+        return true;
+    }
+    
+    public function deleteUserGuests( $userId )
+    {
+    	$this->guestDao->deleteUserGuests($userId);
+    	
+    	return true;
+    }
+}

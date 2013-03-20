@@ -1,0 +1,23 @@
+{style}
+{literal}
+    .ow_guest_user {
+        display: inline-block;
+        margin: 0px 5px 5px;
+        text-align: center;
+        width: 70px;
+        line-height: 11px;
+    }
+    .ow_guest_avatar, .ow_guest_avatar img { width: 70px; height: 70px; }
+    .ow_guest_time { height: 25px; padding-top: 3px; overflow: hidden; }
+{/literal}
+{/style}
+
+<div class="ow_smallmargin">
+{foreach from=$guests item='g'}
+    {capture assign='guestId'}{$g->guestId}{/capture}
+    <div class="ow_guest_user ow_center">
+        {decorator name=avatar_item data=$avatars[$guestId]}
+        <div class="ow_guest_time ow_tiny">{$g->visitTimestamp}<br /><br />&nbsp;</div>
+    </div>
+{/foreach}
+</div>
