@@ -52,7 +52,7 @@ class OCSGUESTS_CTRL_Admin extends ADMIN_CTRL_Abstract
         	$values = $form->getValues();
         	if ( $values['months'] > 12 )
         	{
-        		$this->redirect();
+                $values['months'] = 12;
         	}
         	
         	OW::getConfig()->saveConfig('ocsguests', 'store_period', (int) $values['months']);

@@ -26,20 +26,20 @@ class OCSGUESTS_CMP_MyGuestsWidget extends BASE_CLASS_Widget
         
         $userId = OW::getUser()->getId();
         $guests = $service->findGuestsForUser($userId, 1, $count);
-        
+
         if ( !$guests )
         {
         	$this->setVisible(false);
         	return;
         }
-        
+
         $userIdList = array();
         foreach ( $guests as $guest )
         {
         	array_push($userIdList, $guest->guestId);
         }
         
-        $avatars = BOL_AvatarService::getInstance()->getDataForUserAvatars($userIdList, true, true, true, false);
+        $avatars = BOL_AvatarService::getInstance()->getDataForUserAvatars($userIdList, true, true, true, true);
         
         foreach ( $avatars as &$item )
         {
@@ -50,7 +50,7 @@ class OCSGUESTS_CMP_MyGuestsWidget extends BASE_CLASS_Widget
         
         $total = $service->countGuestsForUser($userId);
         
-        //if ( $total > $count )
+        if ( $total > $count )
         {
 	        $toolbar = array('label' => OW::getLanguage()->text('base', 'view_all'), 'href' => OW::getRouter()->urlForRoute('ocsguests.list'));
 	        $this->setSettingValue(self::SETTING_TOOLBAR, array($toolbar));
@@ -63,7 +63,7 @@ class OCSGUESTS_CMP_MyGuestsWidget extends BASE_CLASS_Widget
         $settingList['count'] = array(
             'presentation' => 'number',
             'label' => OW::getLanguage()->text('ocsguests', 'guest_list_widget_settings_count'),
-            'value' => '4'
+            'value' => '6'
         );
 
         return $settingList;
