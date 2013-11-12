@@ -52,7 +52,12 @@ final class OCSGUESTS_BOL_Service
 
         return self::$classInstance;
     }
-    
+
+    /**
+     * @param $userId
+     * @param $guestId
+     * @return bool
+     */
     public function trackVisit( $userId, $guestId )
     {
     	$guest = $this->guestDao->findGuest($userId, $guestId);
@@ -75,10 +80,19 @@ final class OCSGUESTS_BOL_Service
     	
     	return true;
     }
-        
+
+    /**
+     * @param $userId
+     * @param $page
+     * @param $limit
+     * @return array
+     */
     public function findGuestsForUser( $userId, $page, $limit )
     {
-    	if ( !$userId ) return;
+    	if ( !$userId )
+        {
+            return array();
+        }
     	
     	$guests = $this->guestDao->findUserGuests($userId, $page, $limit);
     	
@@ -89,21 +103,37 @@ final class OCSGUESTS_BOL_Service
     	
     	return $guests;
     }
-    
+
+    /**
+     * @param $userId
+     * @param $page
+     * @param $limit
+     * @return array
+     */
     public function findGuestUsers( $userId, $page, $limit )
     {
-        if ( !$userId ) return;
+        if ( !$userId )
+        {
+            return array();
+        }
         
         $guests = $this->guestDao->findGuestUsers($userId, $page, $limit);
         
         return $guests;
     }
-    
+
+    /**
+     * @param $userId
+     * @return int
+     */
     public function countGuestsForUser( $userId )
     {
     	return $this->guestDao->countUserGuests($userId);    	
     }
-    
+
+    /**
+     * @return bool
+     */
     public function checkExpiredGuests()
     {
     	$months = (int) OW::getConfig()->getValue('ocsguests', 'store_period');
@@ -113,7 +143,11 @@ final class OCSGUESTS_BOL_Service
         
         return true;
     }
-    
+
+    /**
+     * @param $userId
+     * @return bool
+     */
     public function deleteUserGuests( $userId )
     {
     	$this->guestDao->deleteUserGuests($userId);

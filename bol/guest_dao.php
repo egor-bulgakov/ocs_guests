@@ -62,7 +62,12 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
     {
         return OW_DB_PREFIX . 'ocsguests_guest';
     }
-    
+
+    /**
+     * @param $userId
+     * @param $guestId
+     * @return mixed
+     */
     public function findGuest( $userId, $guestId )
     {
     	$example = new OW_Example();
@@ -71,7 +76,13 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
     	
     	return $this->findObjectByExample($example);
     }
-    
+
+    /**
+     * @param $userId
+     * @param $page
+     * @param $limit
+     * @return array|mixed
+     */
     public function findUserGuests( $userId, $page, $limit )
     {
     	$first = ( $page - 1 ) * $limit;
@@ -83,7 +94,13 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
     	
     	return $this->findListByExample($example);
     }
-    
+
+    /**
+     * @param $userId
+     * @param $page
+     * @param $limit
+     * @return array|mixed
+     */
     public function findGuestUsers( $userId, $page, $limit )
     {
     	$first = ( $page - 1 ) * $limit;
@@ -103,7 +120,11 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
 
         return $this->dbo->queryForObjectList($query, BOL_UserDao::getInstance()->getDtoClassName(), array($userId, $first, $limit));
     }
-    
+
+    /**
+     * @param $userId
+     * @return mixed|null|string
+     */
     public function countUserGuests( $userId )
     {
         $example = new OW_Example();
@@ -111,7 +132,10 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
         
         return $this->countByExample($example);
     }
-    
+
+    /**
+     * @param $timestamp
+     */
     public function deleteExpired( $timestamp )
     {
     	$example = new OW_Example();
@@ -119,7 +143,10 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
     	
     	$this->deleteByExample($example);
     }
-    
+
+    /**
+     * @param $userId
+     */
     public function deleteUserGuests( $userId )
     {
     	$sql = "DELETE FROM `".$this->getTableName()."` 

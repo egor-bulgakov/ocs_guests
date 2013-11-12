@@ -24,34 +24,4 @@ OW::getRouter()->addRoute(
     new OW_Route('ocsguests.list', '/guests/list', 'OCSGUESTS_CTRL_List', 'index')
 );
 
-
-function ocsguests_track_visit()
-{
-    $attrs = OW::getDispatcher()->getDispatchAttributes();
-
-    if ( $attrs['controller'] == 'BASE_CTRL_ComponentPanel' && $attrs['action'] == 'profile' )
-    {
-        $username = $attrs['params']['username'];
-        
-        $user = BOL_UserService::getInstance()->findByUsername($username);
-        $userId = $user->id;
-        $viewerId = OW::getUser()->getId();
-        
-        if ( $viewerId && $viewerId != $userId )
-        {
-            OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
-        }
-    }
-}
-OW::getEventManager()->bind(OW_EventManager::ON_FINALIZE, 'ocsguests_track_visit');
-
-function ocsguests_on_user_unregister( OW_Event $event )
-{
-    $params = $event->getParams();
-
-    $userId = $params['userId'];
-
-    OCSGUESTS_BOL_Service::getInstance()->deleteUserGuests($userId);
-}
-
-OW::getEventManager()->bind(OW_EventManager::ON_USER_UNREGISTER, 'ocsguests_on_user_unregister');
+OCSGUESTS_CLASS_EventHandler::getInstance()->init();

@@ -39,7 +39,7 @@ class OCSGUESTS_CMP_MyGuestsWidget extends BASE_CLASS_Widget
         	array_push($userIdList, $guest->guestId);
         }
         
-        $avatars = BOL_AvatarService::getInstance()->getDataForUserAvatars($userIdList, true, true, true, true);
+        $avatars = BOL_AvatarService::getInstance()->getDataForUserAvatars($userIdList);
         
         foreach ( $avatars as &$item )
         {
@@ -52,7 +52,10 @@ class OCSGUESTS_CMP_MyGuestsWidget extends BASE_CLASS_Widget
         
         if ( $total > $count )
         {
-	        $toolbar = array('label' => OW::getLanguage()->text('base', 'view_all'), 'href' => OW::getRouter()->urlForRoute('ocsguests.list'));
+	        $toolbar = array(
+                'label' => OW::getLanguage()->text('base', 'view_all'),
+                'href' => OW::getRouter()->urlForRoute('ocsguests.list')
+            );
 	        $this->setSettingValue(self::SETTING_TOOLBAR, array($toolbar));
         }
     }
