@@ -12,7 +12,7 @@
  * Guests event handler
  *
  * @author Oxwall CandyStore <plugins@oxcandystore.com>
- * @package ow.ow_plugins.ocs_guests.bol
+ * @package ow.ow_plugins.ocs_guests.classes
  * @since 1.3.1
  */
 
@@ -47,22 +47,21 @@ class OCSGUESTS_CLASS_EventHandler
     }
 
 
-    public function trackVisit()
+    public function trackVisit( BASE_CLASS_EventCollector $event )
     {
-        $attrs = OW::getRequestHandler()->getHandlerAttributes();
+        $params = $event->getParams();
 
-        if ( $attrs['controller'] == 'BASE_CTRL_ComponentPanel' && $attrs['action'] == 'profile' )
+        if ( empty($params['entityId']) || empty($params['placeName']) || $params['placeName'] != 'profile' )
         {
-            $username = $attrs['params']['username'];
+            return;
+        }
 
-            $user = BOL_UserService::getInstance()->findByUsername($username);
-            $userId = $user->id;
-            $viewerId = OW::getUser()->getId();
+        $userId = (int) $params['entityId'];
+        $viewerId = OW::getUser()->getId();
 
-            if ( $viewerId && $viewerId != $userId )
-            {
-                OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
-            }
+        if ( $userId && $viewerId && $viewerId != $userId )
+        {
+            OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
         }
     }
 
@@ -77,9 +76,16 @@ class OCSGUESTS_CLASS_EventHandler
 
     public function init()
     {
+        $this->genericInit();
         $em = OW::getEventManager();
 
-        $em->bind(OW_EventManager::ON_FINALIZE, array($this, 'trackVisit'));
+        $em->bind('base.widget_panel.content.top', array($this, 'trackVisit'));
+    }
+
+    public function genericInit()
+    {
+        $em = OW::getEventManager();
+
         $em->bind(OW_EventManager::ON_USER_UNREGISTER, array($this, 'onUserUnregister'));
     }
 }
