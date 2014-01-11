@@ -1,0 +1,8 @@
+Jan 11, 2014 - Who Viewed Me plugin build 6500
+============
+* Oxwall 1.6 support added
+* Mobile version visits tracking implemented
+
+Feb 26, 2012 - Who Viewed Me plugin build 1
+============
+Initial release
