@@ -45,6 +45,15 @@ class OCSGUESTS_CMP_MyGuestsWidget extends BASE_CLASS_Widget
         {
         	$item['class'] = 'ow_guest_avatar';
         }
+        
+        $event = new OW_Event('bookmarks.is_mark', array(), $avatars);
+        OW::getEventManager()->trigger($event);
+        
+        if ( $event->getData() )
+        {
+            $avatars = $event->getData();
+        }
+
         $this->assign('avatars', $avatars);
         $this->assign('guests', $guests);
         

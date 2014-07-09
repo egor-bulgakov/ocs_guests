@@ -12,8 +12,8 @@
  * Guests event handler
  *
  * @author Oxwall CandyStore <plugins@oxcandystore.com>
- * @package ow.ow_plugins.ocs_guests.classes
- * @since 1.3.1
+ * @package ow_plugins.ocs_guests.classes
+ * @since 1.6.0
  */
 
 class OCSGUESTS_CLASS_EventHandler
@@ -74,18 +74,80 @@ class OCSGUESTS_CLASS_EventHandler
         OCSGUESTS_BOL_Service::getInstance()->deleteUserGuests($userId);
     }
 
-    public function init()
+    public function getList( OW_Event $event )
     {
-        $this->genericInit();
-        $em = OW::getEventManager();
+        $params = $event->getParams();
+        $userId = $params['userId'];
+        $page = empty($params['page']) ? 1 : $params['page'];
+        $limit = empty($params['limit']) ? 1000000 : $params['limit'];
+        
+        $users = OCSGUESTS_BOL_Service::getInstance()->findGuestUsers($userId, $page, $limit);
+        $guestsIdList = array();
+        foreach ($users as $user)
+        {
+            $guestsIdList[] = $user->id;
+        }
+        
+        $guests = OCSGUESTS_BOL_Service::getInstance()->findGuestsByGuestIds($userId, $guestsIdList);
+        $out = array();
+        
+        foreach ( $guests as $guest )
+        {
+            $out[] = array(
+                "userId" => $guest->guestId,
+                "viewed" => $guest->viewed,
+                "timeStamp" => $guest->visitTimestamp
+            );
+        }
+        
+        $event->setData($out);
+        
+        return $out;
+    }
+    
+    public function getNewCount( OW_Event $event )
+    {
+        $params = $event->getParams();
+        $userId = $params['userId'];
 
-        $em->bind('base.widget_panel.content.top', array($this, 'trackVisit'));
+        $count = OCSGUESTS_BOL_Service::getInstance()->findNewGuestsCount($userId);
+
+        $event->setData($count);
+
+        return $count;
+    }
+    
+    public function markViewed( OW_Event $event )
+    {
+        $params = $event->getParams();
+        
+        if ( empty($params['guestIds']) )
+    {
+            return;
+        }
+        
+        $userId = $params['userId'];
+        $guestIds = $params['guestIds'];
+
+        OCSGUESTS_BOL_Service::getInstance()->setViewedStatusByGuestIds($userId, $guestIds);
     }
 
     public function genericInit()
     {
         $em = OW::getEventManager();
 
+        $em->bind("guests.get_guests_list", array($this, "getList"));
+        $em->bind("guests.get_new_guests_count", array($this, "getNewCount"));
+        $em->bind("guests.mark_guests_viewed", array($this, "markViewed"));
+        
         $em->bind(OW_EventManager::ON_USER_UNREGISTER, array($this, 'onUserUnregister'));
+    }
+    
+    public function init()
+    {
+        $this->genericInit();
+        $em = OW::getEventManager();
+        
+        $em->bind('base.widget_panel.content.top', array($this, 'trackVisit'));
     }
 }

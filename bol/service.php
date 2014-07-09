@@ -126,6 +126,20 @@ final class OCSGUESTS_BOL_Service
      * @param $userId
      * @return int
      */
+    public function findNewGuestsCount( $userId )
+    {
+        if ( !$userId )
+        {
+            return 0;
+        }
+
+        return (int) $this->guestDao->countNewGuests($userId);
+    }
+    
+    /**
+     * @param $userId
+     * @return int
+     */
     public function countGuestsForUser( $userId )
     {
     	return $this->guestDao->countUserGuests($userId);    	
@@ -153,5 +167,20 @@ final class OCSGUESTS_BOL_Service
     	$this->guestDao->deleteUserGuests($userId);
     	
     	return true;
+    }
+    
+    public function getViewedStatusByGuestsIds( $userId, $guestIds )
+    {
+        return $this->guestDao->getViewedStatusByGuestIds($userId, $guestIds);
+    }
+    
+    public function findGuestsByGuestIds( $userId, $guestIds )
+    {
+        return $this->guestDao->findGuestsByGuestIds($userId, $guestIds);
+    }
+    
+    public function setViewedStatusByGuestIds( $userId, $guestIds, $viewed = true )
+    {
+        return $this->guestDao->setViewedStatusByGuestIds($userId, $guestIds, $viewed);
     }
 }

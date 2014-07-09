@@ -21,25 +21,25 @@ class OCSGUESTS_CTRL_List extends OW_ActionController
     {
         if ( !$userId = OW::getUser()->getId() )
         {
-            throw new AuthenticationException();
+            throw new AuthenticateException();
         }
 
         $page = (!empty($_GET['page']) && intval($_GET['page']) > 0 ) ? $_GET['page'] : 1;
+        $lang = OW::getLanguage();
         
         $perPage = (int)OW::getConfig()->getValue('base', 'users_count_on_page');
         $guests = OCSGUESTS_BOL_Service::getInstance()->findGuestsForUser($userId, $page, $perPage);
-        $guestsUsers = OCSGUESTS_BOL_Service::getInstance()->findGuestUsers($userId, $page, $perPage);
         
         $guestList = array();
         if ( $guests )
         {
         	foreach ( $guests as $guest )
         	{
-        		$guestList[$guest->guestId] = $guest;
+        		$guestList[$guest->guestId] = array('last_visit' => $lang->text('ocsguests', 'visited') . ' ' . '<span class="ow_remark">' . $guest->visitTimestamp . '</span>');
         	}
 	        $itemCount = OCSGUESTS_BOL_Service::getInstance()->countGuestsForUser($userId);
 
-	        $cmp = new OCSGUESTS_CMP_Users($guestsUsers, $itemCount, $perPage, true, $guestList);
+            $cmp = OW::getClassInstance('BASE_CMP_Users', $guestList, array(), $itemCount);
 	        $this->addComponent('guests', $cmp);
         }
         else 
@@ -47,8 +47,9 @@ class OCSGUESTS_CTRL_List extends OW_ActionController
         	$this->assign('guests', null);
         }
         
-        $this->setPageHeading(OW::getLanguage()->text('ocsguests', 'viewed_profile'));
-        $this->setPageHeadingIconClass('ow_ic_user');
+        $this->setPageHeading($lang->text('ocsguests', 'viewed_profile'));
+        $this->setPageTitle($lang->text('ocsguests', 'viewed_profile'));
+
         OW::getNavigation()->activateMenuItem(OW_Navigation::MAIN, 'base', 'dashboard');
     }
 }

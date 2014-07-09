@@ -95,6 +95,53 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
     	return $this->findListByExample($example);
     }
 
+    public function setViewedStatusByGuestIds( $userId, $guestIds, $viewed = true  )
+    {
+        if ( empty($guestIds) )
+        {
+            return;
+        }
+        
+        $query = "UPDATE " . $this->getTableName() . " SET `viewed`=:viewed "
+                . "WHERE `guestId` IN ( " . implode(",", $guestIds) . " ) "
+                    . "AND `userId`=:u";
+        
+        $this->dbo->query($query, array(
+            "u" => $userId,
+            "viewed" => $viewed
+        ));
+
+        return true;
+    }
+    
+    public function getViewedStatusByGuestIds( $userId, $guestIds  )
+    {
+        $dtoList = $this->findGuestsByGuestIds($userId, $guestIds);
+        
+        $out = array();
+        foreach ( $dtoList as $dto )
+        {
+            $out[$dto->guestId] = $dto->viewed;
+        }
+        
+        return $out;
+    }
+    
+    public function findGuestsByGuestIds( $userId, $guestIds  )
+    {
+        if ( empty($guestIds) )
+        {
+            return array();
+        }
+        
+        $example = new OW_Example();
+        $example->andFieldEqual("userId", $userId);
+        $example->andFieldInArray("guestId", $guestIds);
+        $example->setOrder("visitTimestamp DESC");
+        
+        return $this->findListByExample($example);
+    }
+    
     /**
      * @param $userId
      * @param $page
@@ -133,6 +180,15 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
         return $this->countByExample($example);
     }
 
+    public function countNewGuests( $userId )
+    {
+        $example = new OW_Example();
+        $example->andFieldEqual('userId', $userId);
+        $example->andFieldEqual('viewed', 0);
+
+        return $this->countByExample($example);
+    }
+    
     /**
      * @param $timestamp
      */

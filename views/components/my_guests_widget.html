@@ -15,7 +15,7 @@
 {foreach from=$guests item='g'}
     {capture assign='guestId'}{$g->guestId}{/capture}
     <div class="ow_guest_user ow_center">
-        {decorator name=avatar_item data=$avatars[$guestId]}
+        {decorator name=avatar_item data=$avatars[$guestId] isMarked=!empty($avatars[$guestId].isMarked)}
         <div class="ow_guest_time ow_tiny">{$g->visitTimestamp}<br /><br />&nbsp;</div>
     </div>
 {/foreach}
