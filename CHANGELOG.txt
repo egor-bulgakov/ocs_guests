@@ -1,4 +1,8 @@
-Jul 9, 2014 - Who Viewed Me plugin build 6767
+Jul 10, 2014 - Who Viewed Me plugin build 7677
+============
+* View more page design issie fixed
+
+Jul 9, 2014 - Who Viewed Me plugin build 7676
 ============
 * Oxwall 1.7 support added
 

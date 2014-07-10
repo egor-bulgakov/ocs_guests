@@ -29,7 +29,7 @@ class OCSGUESTS_CTRL_List extends OW_ActionController
         
         $perPage = (int)OW::getConfig()->getValue('base', 'users_count_on_page');
         $guests = OCSGUESTS_BOL_Service::getInstance()->findGuestsForUser($userId, $page, $perPage);
-        
+
         $guestList = array();
         if ( $guests )
         {
@@ -39,7 +39,15 @@ class OCSGUESTS_CTRL_List extends OW_ActionController
         	}
 	        $itemCount = OCSGUESTS_BOL_Service::getInstance()->countGuestsForUser($userId);
 
-            $cmp = OW::getClassInstance('BASE_CMP_Users', $guestList, array(), $itemCount);
+            if ( OW::getPluginManager()->isPluginActive('skadate') )
+            {
+                $cmp = OW::getClassInstance('BASE_CMP_Users', $guestList, array(), $itemCount);
+            }
+            else
+            {
+                $guestsUsers = OCSGUESTS_BOL_Service::getInstance()->findGuestUsers($userId, $page, $perPage);
+                $cmp = new OCSGUESTS_CMP_Users($guestsUsers, $itemCount, $perPage, true, $guestList);
+            }
 	        $this->addComponent('guests', $cmp);
         }
         else 
