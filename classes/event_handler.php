@@ -24,7 +24,7 @@ class OCSGUESTS_CLASS_EventHandler
      * @var OCSGUESTS_CLASS_EventHandler
      */
     private static $classInstance;
-    
+
     /**
      * Class constructor
      *
@@ -47,7 +47,7 @@ class OCSGUESTS_CLASS_EventHandler
     }
 
 
-    public function trackVisit( BASE_CLASS_EventCollector $event )
+    public function onProfilePageRender( BASE_CLASS_EventCollector $event )
     {
         $params = $event->getParams();
 
@@ -57,11 +57,29 @@ class OCSGUESTS_CLASS_EventHandler
         }
 
         $userId = (int) $params['entityId'];
-        $viewerId = OW::getUser()->getId();
+            $viewerId = OW::getUser()->getId();
 
         if ( $userId && $viewerId && $viewerId != $userId )
+            {
+                OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
+            }
+        }
+
+    public function trackVisit( OW_Event $event )
+    {
+        $params = $event->getParams();
+
+        if ( empty($params['userId']) || empty($params['guestId']) )
         {
-            OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
+            return;
+        }
+
+        $userId = $params['userId'];
+        $guestId = $params['guestId'];
+
+        if ( $userId && $guestId && $guestId != $userId )
+        {
+            OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $guestId);
         }
     }
 
@@ -73,7 +91,7 @@ class OCSGUESTS_CLASS_EventHandler
 
         OCSGUESTS_BOL_Service::getInstance()->deleteUserGuests($userId);
     }
-
+    
     public function getList( OW_Event $event )
     {
         $params = $event->getParams();
@@ -122,13 +140,13 @@ class OCSGUESTS_CLASS_EventHandler
         $params = $event->getParams();
         
         if ( empty($params['guestIds']) )
-    {
+        {
             return;
         }
         
         $userId = $params['userId'];
         $guestIds = $params['guestIds'];
-
+        
         OCSGUESTS_BOL_Service::getInstance()->setViewedStatusByGuestIds($userId, $guestIds);
     }
 
@@ -139,6 +157,7 @@ class OCSGUESTS_CLASS_EventHandler
         $em->bind("guests.get_guests_list", array($this, "getList"));
         $em->bind("guests.get_new_guests_count", array($this, "getNewCount"));
         $em->bind("guests.mark_guests_viewed", array($this, "markViewed"));
+        $em->bind("guests.track_visit", array($this, "trackVisit"));
         
         $em->bind(OW_EventManager::ON_USER_UNREGISTER, array($this, 'onUserUnregister'));
     }
@@ -148,6 +167,6 @@ class OCSGUESTS_CLASS_EventHandler
         $this->genericInit();
         $em = OW::getEventManager();
         
-        $em->bind('base.widget_panel.content.top', array($this, 'trackVisit'));
+        $em->bind('base.widget_panel.content.top', array($this, 'onProfilePageRender'));
     }
 }
