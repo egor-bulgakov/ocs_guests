@@ -21,3 +21,6 @@ $widgetService = BOL_ComponentAdminService::getInstance();
 $widget = $widgetService->addWidget('OCSGUESTS_CMP_MyGuestsWidget', false);
 $placeWidget = $widgetService->addWidgetToPlace($widget, BOL_ComponentAdminService::PLACE_DASHBOARD);
 $widgetService->addWidgetToPosition($placeWidget, BOL_ComponentService::SECTION_LEFT);
+
+// Mobile activation
+OW::getNavigation()->addMenuItem(OW_Navigation::MOBILE_TOP, 'ocsguests_list', 'ocsguests', 'ocsguests_menu_item', OW_Navigation::VISIBLE_FOR_MEMBER);

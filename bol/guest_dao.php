@@ -127,6 +127,20 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
         return $out;
     }
     
+    public function getVisitStampByGuestIds( $userId, $guestIds )
+    {
+        $dtoList = $this->findGuestsByGuestIds($userId, $guestIds);
+        
+        $out = array();
+        foreach ( $dtoList as $dto )
+        {
+            $out[$dto->guestId] = $dto->visitTimestamp;
+        }
+        
+        return $out;
+    }
+    
+    
     public function findGuestsByGuestIds( $userId, $guestIds  )
     {
         if ( empty($guestIds) )

@@ -15,7 +15,6 @@
  * @package ow_plugins.ocs_guests.classes
  * @since 1.6.0
  */
-
 class OCSGUESTS_CLASS_EventHandler
 {
     /**
@@ -29,7 +28,10 @@ class OCSGUESTS_CLASS_EventHandler
      * Class constructor
      *
      */
-    private function __construct() { }
+    private function __construct()
+    {
+        
+    }
 
     /**
      * Returns class instance
@@ -46,7 +48,6 @@ class OCSGUESTS_CLASS_EventHandler
         return self::$classInstance;
     }
 
-
     public function onProfilePageRender( BASE_CLASS_EventCollector $event )
     {
         $params = $event->getParams();
@@ -57,13 +58,16 @@ class OCSGUESTS_CLASS_EventHandler
         }
 
         $userId = (int) $params['entityId'];
-            $viewerId = OW::getUser()->getId();
+        $viewerId = OW::getUser()->getId();
 
-        if ( $userId && $viewerId && $viewerId != $userId )
-            {
-                OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
-            }
+        $authService = BOL_AuthorizationService::getInstance();
+        $isAdmin = $authService->isActionAuthorizedForUser($viewerId, 'admin') || $authService->isActionAuthorizedForUser($viewerId, 'base');
+
+        if ( $userId && $viewerId && ($viewerId != $userId) && !$isAdmin )
+        {
+            OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
         }
+    }
 
     public function trackVisit( OW_Event $event )
     {
@@ -77,7 +81,10 @@ class OCSGUESTS_CLASS_EventHandler
         $userId = $params['userId'];
         $guestId = $params['guestId'];
 
-        if ( $userId && $guestId && $guestId != $userId )
+        $authService = BOL_AuthorizationService::getInstance();
+        $isAdmin = $authService->isActionAuthorizedForUser($guestId, 'admin') || $authService->isActionAuthorizedForUser($guestId, 'base');
+
+        if ( $userId && $guestId && ($guestId != $userId) && !$isAdmin )
         {
             OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $guestId);
         }

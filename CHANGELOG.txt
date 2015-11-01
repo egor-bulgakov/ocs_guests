@@ -1,3 +1,9 @@
+Nov 1, 2015 - Who Viewed Me plugin build 9623
+============
+* Oxwall 1.8 support added
+* Mobile version support implemented
+* Administrator's visits are now not tracked
+
 Jul 10, 2014 - Who Viewed Me plugin build 7677
 ============
 * View more page design issie fixed

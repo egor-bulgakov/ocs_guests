@@ -15,7 +15,6 @@
  * @package ow.ow_plugins.ocs_guests.mobile.classes
  * @since 1.3.1
  */
-
 class OCSGUESTS_MCLASS_EventHandler
 {
     /**
@@ -29,7 +28,10 @@ class OCSGUESTS_MCLASS_EventHandler
      * Class constructor
      *
      */
-    private function __construct() { }
+    private function __construct()
+    {
+        
+    }
 
     /**
      * Returns class instance
@@ -46,7 +48,6 @@ class OCSGUESTS_MCLASS_EventHandler
         return self::$classInstance;
     }
 
-
     public function trackVisit( BASE_CLASS_EventCollector $event )
     {
         $params = $event->getParams();
@@ -59,7 +60,10 @@ class OCSGUESTS_MCLASS_EventHandler
         $userId = (int) $params['userId'];
         $viewerId = OW::getUser()->getId();
 
-        if ( $userId && $viewerId && $viewerId != $userId )
+        $authService = BOL_AuthorizationService::getInstance();
+        $isAdmin = $authService->isActionAuthorizedForUser($viewerId, 'admin') || $authService->isActionAuthorizedForUser($viewerId, 'base');
+
+        if ( $userId && $viewerId && ($viewerId != $userId) && !$isAdmin )
         {
             OCSGUESTS_BOL_Service::getInstance()->trackVisit($userId, $viewerId);
         }
@@ -74,11 +78,41 @@ class OCSGUESTS_MCLASS_EventHandler
         OCSGUESTS_BOL_Service::getInstance()->deleteUserGuests($userId);
     }
 
+    public function getUserListFields( OW_Event $e )
+    {
+        $params = $e->getParams();
+        $data = $e->getData();
+        
+        $list = !empty($params['list']) ? $params['list'] : null;
+        
+        if ( empty($list) || $list != 'ocsguests' || !OW::getUser() || !OW::getUser()->isAuthenticated() )
+        {
+            return;
+        }
+        
+        $userIdList = !empty($params['userIdList']) ? $params['userIdList'] : null;
+        
+        if ( empty($userIdList) )
+        {
+            return;
+        }
+        
+        $visitTimeList = OCSGUESTS_BOL_Service::getInstance()->getVisitedStampByGuestsIds(OW::getUser()->getId(), $userIdList);
+        
+        foreach ( $userIdList as $userId )
+        {
+            $data[$userId][] = OW::getLanguage()->text('ocsguests', 'visited') . ' ' . '<span class="owm_remark">' . $visitTimeList[$userId]. '</span>';
+        }
+        
+        $e->setData($data);
+    }
+    
     public function init()
     {
         OCSGUESTS_CLASS_EventHandler::getInstance()->genericInit();
         $em = OW::getEventManager();
 
         $em->bind('mobile.content.profile_view_top', array($this, 'trackVisit'));
+        $em->bind("base.user_list.get_fields", array($this, 'getUserListFields'));
     }
 }

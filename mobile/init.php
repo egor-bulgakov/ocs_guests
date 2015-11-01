@@ -16,4 +16,12 @@
  * @since 1.6.0
  */
 
+OW::getRouter()->addRoute(
+    new OW_Route('ocsguests_list', '/guests/list', 'OCSGUESTS_MCTRL_List', 'index')
+);
+
+OW::getRouter()->addRoute(
+    new OW_Route('ocsguests_responder', '/guests/responder', 'OCSGUESTS_MCTRL_List', 'responder')
+);
+
 OCSGUESTS_MCLASS_EventHandler::getInstance()->init();

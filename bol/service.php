@@ -15,13 +15,13 @@
  * @package ow.ow_plugins.ocs_guests.bol
  * @since 1.3.1
  */
-
 final class OCSGUESTS_BOL_Service
 {
     /**
      * @var OCSGUESTS_BOL_GuestDao
      */
     private $guestDao;
+
     /**
      * Class instance
      *
@@ -60,6 +60,11 @@ final class OCSGUESTS_BOL_Service
      */
     public function trackVisit( $userId, $guestId )
     {
+        if ( !$userId || !$guestId || ($guestId == $userId) || BOL_AuthorizationService::getInstance()->isModerator($guestId) )
+        {
+            return;
+        }
+
     	$guest = $this->guestDao->findGuest($userId, $guestId);
     	
     	if ( $guest )
@@ -102,6 +107,21 @@ final class OCSGUESTS_BOL_Service
     	}
     	
     	return $guests;
+    }
+
+    /**
+     * @param $userId
+     * @param $userList
+     * @return array
+     */
+    public function findGuestsForUserList( $userId, $userList )
+    {
+        if ( !$userId || empty($userList) )
+        {
+            return array();
+        }
+
+        return $this->guestDao->getVisitStampByGuestIds($userId, $userList);
     }
 
     /**
@@ -169,9 +189,18 @@ final class OCSGUESTS_BOL_Service
     	return true;
     }
     
-    public function getViewedStatusByGuestsIds( $userId, $guestIds )
+    public function getVisitedStampByGuestsIds( $userId, $guestIds )
     {
-        return $this->guestDao->getViewedStatusByGuestIds($userId, $guestIds);
+        $list =$this->guestDao->getVisitStampByGuestIds($userId, $guestIds);
+        $result = array();
+        
+        foreach ( $list as $key => $value )
+        {
+            $result[$key] = UTIL_DateTime::formatDate($value, false);
+        }
+        
+        unset($list);
+        return $result;
     }
     
     public function findGuestsByGuestIds( $userId, $guestIds )
