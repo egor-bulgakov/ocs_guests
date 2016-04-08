@@ -196,11 +196,18 @@ class OCSGUESTS_BOL_GuestDao extends OW_BaseDao
 
     public function countNewGuests( $userId )
     {
-        $example = new OW_Example();
-        $example->andFieldEqual('userId', $userId);
-        $example->andFieldEqual('viewed', 0);
+        $query = "SELECT COUNT(*)
+            FROM `".$this->getTableName()."` AS `g`
+            INNER JOIN `" . BOL_UserDao::getInstance()->getTableName() . "` as `u`
+                ON (`g`.`guestId` = `u`.`id`)
+            LEFT JOIN `" . BOL_UserSuspendDao::getInstance()->getTableName() . "` as `s`
+                ON( `u`.`id` = `s`.`userId` )
+            LEFT JOIN `" . BOL_UserApproveDao::getInstance()->getTableName() . "` as `d`
+                ON( `u`.`id` = `d`.`userId` )
+            WHERE `s`.`id` IS NULL AND `d`.`id` IS NULL
+            AND `g`.`userId` = ? AND `g`.`viewed` = 0";
 
-        return $this->countByExample($example);
+        return $this->dbo->queryForColumn($query, array($userId));
     }
     
     /**

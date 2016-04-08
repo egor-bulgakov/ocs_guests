@@ -16,4 +16,4 @@
  * @since 1.3.1
  */
 
-BOL_ComponentAdminService::getInstance()->deleteWidget('OCSGUESTS_CMP_MyGuestsWidget');
+BOL_ComponentAdminService::getInstance()->deleteWidget('OCSGUESTS_CMP_MyGuestsWidget');OW::getNavigation()->deleteMenuItem('ocsguests', 'ocsguests_menu_item');

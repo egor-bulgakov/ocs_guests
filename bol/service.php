@@ -62,28 +62,37 @@ final class OCSGUESTS_BOL_Service
     {
         if ( !$userId || !$guestId || ($guestId == $userId) || BOL_AuthorizationService::getInstance()->isModerator($guestId) )
         {
-            return;
+            return false;
         }
 
-    	$guest = $this->guestDao->findGuest($userId, $guestId);
-    	
-    	if ( $guest )
-    	{
-    		$guest->visitTimestamp = time();
-    		$this->guestDao->save($guest);
-    		
-    		return true;
-    	}
-    	
-    	$guest = new OCSGUESTS_BOL_Guest();
-    	$guest->userId = $userId;
-    	$guest->guestId = $guestId;
-    	$guest->viewed = 0;
-    	$guest->visitTimestamp = time();
-    	
-    	$this->guestDao->save($guest);
-    	
-    	return true;
+        $guest = $this->guestDao->findGuest($userId, $guestId);
+        $new = true;
+
+        if ( $guest )
+        {
+            $guest->visitTimestamp = time();
+            $new = (bool) $guest->viewed;
+        }
+        else
+        {
+            $guest = new OCSGUESTS_BOL_Guest();
+            $guest->userId = $userId;
+            $guest->guestId = $guestId;
+            $guest->visitTimestamp = time();
+        }
+
+        $guest->viewed = 0;
+        $this->guestDao->save($guest);
+
+        $event = new OW_Event("guests.after_visit", array(
+            "userId" => $guest->userId,
+            "guestId" => $guest->guestId,
+            "new" => $new
+        ));
+
+        OW::getEventManager()->trigger($event);
+
+        return true;
     }
 
     /**
@@ -111,7 +120,8 @@ final class OCSGUESTS_BOL_Service
 
     /**
      * @param $userId
-     * @param $userList
+     * @param $page
+     * @param $limit
      * @return array
      */
     public function findGuestsForUserList( $userId, $userList )
